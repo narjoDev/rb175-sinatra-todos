@@ -48,3 +48,14 @@ post '/lists' do
     redirect '/lists'
   end
 end
+
+get '/lists/:id' do
+  @lists = session[:lists]
+  @id = params[:id].to_i
+  if @id < @lists.size
+    erb :list
+  else
+    session[:error] = 'The specified list was not found.'
+    redirect '/lists'
+  end
+end
