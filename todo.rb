@@ -50,11 +50,12 @@ post '/lists' do
   end
 end
 
+# View a single todo list
 get '/lists/:id' do
   @lists = session[:lists]
-  @id = params[:id].to_i
-  @list = @lists[@id]
-  if (0...@lists.size).cover? @id
+  @list_id = params[:id].to_i
+  @list = @lists[@list_id]
+  if (0...@lists.size).cover? @list_id
     erb :list
   else
     session[:error] = 'The specified list was not found.'
@@ -93,4 +94,27 @@ post '/lists/:id/destroy' do
   session[:lists].delete_at(id)
   session[:success] = 'The list has been deleted.'
   redirect '/lists'
+end
+
+def error_for_todo(name)
+  return if (1..100).cover? name.size
+
+  'Todo must be between 1 and 100 characters.'
+end
+
+# Add a new todo to a list
+post '/lists/:list_id/todos' do
+  @list_id = params[:list_id].to_i
+  @list = session[:lists][@list_id]
+  text = params[:todo].strip
+
+  error = error_for_todo(text)
+  if error
+    session[:error] = error
+    erb :list
+  else
+    @list[:todos] << { name: text, completed: false }
+    session[:success] = 'The todo has been added.'
+    redirect "/lists/#{@list_id}"
+  end
 end
