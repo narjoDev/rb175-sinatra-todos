@@ -1,6 +1,6 @@
 require 'sinatra'
 require 'sinatra/reloader'
-require "sinatra/content_for"
+require 'sinatra/content_for'
 require 'tilt/erubis'
 
 configure do
@@ -59,5 +59,30 @@ get '/lists/:id' do
   else
     session[:error] = 'The specified list was not found.'
     redirect '/lists'
+  end
+end
+
+# Edit an existing todo list
+get '/lists/:id/edit' do
+  @lists = session[:lists]
+  @id = params[:id].to_i
+  @list = @lists[@id]
+  erb :edit_list
+end
+
+# Update an existing todo list
+post '/lists/:id' do
+  list_name = params['list_name'].strip
+  id = params[:id].to_i
+  @list = session[:lists][id]
+
+  error = error_for_list_name(list_name)
+  if error
+    session[:error] = error
+    erb :edit_list
+  else
+    @list[:name] = list_name
+    session[:success] = 'The list has been updated.'
+    redirect "/lists/#{id}"
   end
 end
