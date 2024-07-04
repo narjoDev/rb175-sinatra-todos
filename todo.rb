@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'sinatra/reloader'
+require "sinatra/content_for"
 require 'tilt/erubis'
 
 configure do
@@ -52,7 +53,8 @@ end
 get '/lists/:id' do
   @lists = session[:lists]
   @id = params[:id].to_i
-  if @id < @lists.size
+  @list = @lists[@id]
+  if (0...@lists.size).cover? @id
     erb :list
   else
     session[:error] = 'The specified list was not found.'
