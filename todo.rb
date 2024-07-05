@@ -33,6 +33,18 @@ helpers do
   def list_class(list)
     'complete' if list_complete?(list)
   end
+
+  def sort_lists(lists, &block)
+    lists.each_with_index.sort_by do |list, _index|
+      list_complete?(list) ? 1 : 0
+    end.each(&block)
+  end
+
+  def sort_todos(todos, &block)
+    todos.each_with_index.sort_by do |todo, _index|
+      todo[:completed] ? 1 : 0
+    end.each(&block)
+  end
 end
 
 before do
