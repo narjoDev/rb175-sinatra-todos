@@ -9,13 +9,29 @@ configure do
 end
 
 helpers do
+  # Launch School implementation displays _remaining_
+  # rather than _done_
+  # That seems counterintuitive to me *shrug*
   def todos_done(list)
     list[:todos].count { |todo| todo[:completed] }
+  end
+
+  # For now I will follow their lead
+  def todos_remaining(list)
+    todos_count(list) - todos_done(list)
+  end
+
+  def todos_count(list)
+    list[:todos].size
   end
 
   def list_complete?(list)
     todos = list[:todos]
     !todos.empty? && todos_done(list) == todos.size
+  end
+
+  def list_class(list)
+    'complete' if list_complete?(list)
   end
 end
 
