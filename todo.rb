@@ -8,6 +8,17 @@ configure do
   set :session_secret, SecureRandom.hex(32)
 end
 
+helpers do
+  def todos_done(list)
+    list[:todos].count { |todo| todo[:completed] }
+  end
+
+  def list_complete?(list)
+    todos = list[:todos]
+    !todos.empty? && todos_done(list) == todos.size
+  end
+end
+
 before do
   session[:lists] ||= []
 end
