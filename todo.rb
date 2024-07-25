@@ -9,14 +9,6 @@ configure do
   set :erb, escape_html: true
 end
 
-def load_list(index)
-  list = session[:lists][index] if index
-  return list if list
-
-  session[:error] = 'The specified list was not found.'
-  redirect '/lists'
-end
-
 helpers do
   # Launch School implementation displays _remaining_
   # rather than _done_
@@ -56,6 +48,29 @@ helpers do
   end
 end
 
+def load_list(index)
+  list = session[:lists][index] if index
+  return list if list
+
+  session[:error] = 'The specified list was not found.'
+  redirect '/lists'
+end
+
+# Return an error message if the name is invalid. Return nil if name is valid.
+def error_for_list_name(name)
+  if !(1..100).cover? name.size
+    'List name must be between 1 and 100 characters.'
+  elsif session[:lists].any? { |list| list[:name] == name }
+    'List name must be unique'
+  end
+end
+
+def error_for_todo(name)
+  return if (1..100).cover? name.size
+
+  'Todo must be between 1 and 100 characters.'
+end
+
 def next_element_id(elements)
   max = elements.map { |element| element[:id] }.max || 0
   max + 1
@@ -78,15 +93,6 @@ end
 # Render the new list form
 get '/lists/new' do
   erb :new_list
-end
-
-# Return an error message if the name is invalid. Return nil if name is valid.
-def error_for_list_name(name)
-  if !(1..100).cover? name.size
-    'List name must be between 1 and 100 characters.'
-  elsif session[:lists].any? { |list| list[:name] == name }
-    'List name must be unique'
-  end
 end
 
 # Create a new list
@@ -144,12 +150,6 @@ post '/lists/:id/destroy' do
     session[:success] = 'The list has been deleted.'
     redirect '/lists'
   end
-end
-
-def error_for_todo(name)
-  return if (1..100).cover? name.size
-
-  'Todo must be between 1 and 100 characters.'
 end
 
 # Add a new todo to a list
