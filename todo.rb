@@ -36,7 +36,7 @@ helpers do
   end
 
   def sort_lists(lists, &block)
-    lists.each_with_index.sort_by do |list, _index|
+    lists.each.sort_by do |list|
       list_complete?(list) ? 1 : 0
     end.each(&block)
   end
@@ -48,8 +48,8 @@ helpers do
   end
 end
 
-def load_list(index)
-  list = session[:lists][index] if index
+def load_list(id)
+  list = session[:lists].find { |list| list[:id] == id }
   return list if list
 
   session[:error] = 'The specified list was not found.'
@@ -103,7 +103,8 @@ post '/lists' do
     session[:error] = error
     erb :new_list # address still displays '/lists'...
   else
-    session[:lists] << { name: list_name, todos: [] }
+    id = next_element_id(session[:lists])
+    session[:lists] << { id: id, name: list_name, todos: [] }
     session[:success] = 'The list has been created.'
     redirect '/lists'
   end
@@ -111,8 +112,9 @@ end
 
 # View a single todo list
 get '/lists/:id' do
-  @list_id = params[:id].to_i
-  @list = load_list(@list_id)
+  id = params[:id].to_i
+  @list = load_list(id)
+  @list_id = @list[:id]
   erb :list
 end
 
@@ -143,7 +145,7 @@ end
 # Delete a todo list
 post '/lists/:id/destroy' do
   id = params[:id].to_i
-  session[:lists].delete_at(id)
+  session[:lists].reject! { |list| list[:id] == id }
   if env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
     '/lists'
   else
